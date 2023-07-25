@@ -33,6 +33,7 @@ class User(Base):
     avatar = Column(String(255), nullable=True)
     refresh_token = Column(String(255), nullable=True)
     role = Column('role', Enum(Role), default=Role.user)
+    is_active = Column(Boolean, default=True)
     created_at = Column('created_at', DateTime, default=func.now())
     photos = relationship('Photo', back_populates='user')
     comments = relationship('Comment', back_populates='user')
