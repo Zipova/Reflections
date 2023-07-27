@@ -35,6 +35,7 @@ class User(Base):
     role = Column('role', Enum(Role), default=Role.user)
     is_active = Column(Boolean, default=True)
     created_at = Column('created_at', DateTime, default=func.now())
+    confirmed = Column(Boolean, default=False)
     photos = relationship('Photo', back_populates='user')
     comments = relationship('Comment', back_populates='user')
 
