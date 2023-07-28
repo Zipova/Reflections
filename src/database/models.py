@@ -50,7 +50,7 @@ class Photo(Base):
     tags = relationship("Tag", secondary=photo_m2m_tag, backref="photos")
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
-    author = relationship('User', back_populates='photos')
+    user = relationship('User', back_populates='photos')
     comments = relationship('Comment', back_populates='photo')
 
 

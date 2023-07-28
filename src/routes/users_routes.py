@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from database.models import User
+from src.database.models import User
 from src.database.db import SessionLocal
 from src.schemas import UserResponse, UserUpdate
 from src.services.auth import auth_service

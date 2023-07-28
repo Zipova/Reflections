@@ -1,6 +1,7 @@
 import time
 import calendar
 
+from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
 from src.database.models import Photo, User, Role
@@ -21,7 +22,7 @@ async def upload_photo(user_id: int, src_url: str, description: str, db: Session
     return new_photo
 
 
-async def get_all_photos(limit: int, offset: int, db: Session):
+async def get_all_photos(limit: int, offset: int, user, db: Session):
     photos = db.query(Photo).limit(limit).offset(offset).all()
     return photos
 
@@ -36,7 +37,7 @@ async def remove_photo(photo_id: int, user: User, db: Session):
     else:
         photo = (
             db.query(Photo)
-            .filter(Photo.id == photo_id, user.id == Photo.user_id)
+            .filter(and_(Photo.id == photo_id, Photo.user_id == user.id))
             .first()
         )
     if photo:
@@ -51,7 +52,7 @@ async def update_description(photo_id: int, body: DescriptionUpdate, user: User,
     else:
         photo = (
             db.query(Photo)
-            .filter(Photo.id == photo_id, user.id == Photo.user_id)
+            .filter(and_(Photo.id == photo_id, Photo.user_id == user.id))
             .first()
         )
     if photo:
