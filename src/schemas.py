@@ -2,9 +2,9 @@ from pydantic import BaseModel, Field, EmailStr
 
 
 class UserModel(BaseModel):
-    username: str = Field(min_length=6, max_length=12)
+    username: str = Field(min_length=6, max_length=25)
     email: EmailStr
-    password: str = Field(min_length=6, max_length=8)
+    password: str = Field(min_length=6, max_length=15)
 
 
 class UserResponse(BaseModel):
