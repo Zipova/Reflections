@@ -9,7 +9,7 @@ from src.services.auth import auth_service
 conf = ConnectionConfig(
     MAIL_USERNAME="m_zipova@meta.ua",
     MAIL_PASSWORD="Sevastopol25",
-    MAIL_FROM=EmailStr("m_zipova@meta.ua"),
+    MAIL_FROM="m_zipova@meta.ua",
     MAIL_PORT=465,
     MAIL_SERVER="smtp.meta.ua",
     MAIL_FROM_NAME="Desired Name",

@@ -1,11 +1,12 @@
 from fastapi import APIRouter, HTTPException, Depends, status
 
 from src.database.db import SessionLocal
-from database.models import User
-from schemas import UserResponse, UserStatusUpdate
+from src.database.models import User
+from src.schemas import UserResponse, UserStatusUpdate
 from src.services.auth import auth_service
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
+
 
 @router.put("/users/{username}/status", response_model=UserResponse)
 def update_user_status(
