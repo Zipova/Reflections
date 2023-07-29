@@ -18,13 +18,21 @@ class UserResponse(BaseModel):
     is_active: bool
 
 
+class Username(BaseModel):
+    id: int
+    username: str
+
+
 class UserUpdate(BaseModel):
-    email: str
-    avatar: str
+    username: str
 
 
 class UserStatusUpdate(BaseModel):
     is_active: bool
+
+
+class UserRoleUpdate(BaseModel):
+    role: str
 
 
 class TokenModel(BaseModel):
@@ -42,7 +50,7 @@ class CommentModel(BaseModel):
 
 
 class CommentResponse(CommentModel):
-    user_id: int
+    user: Username
     photo_id: int
     comment: str
     created_at: datetime
