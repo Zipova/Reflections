@@ -42,6 +42,14 @@ async def login(body: OAuth2PasswordRequestForm = Depends(), db: Session = Depen
     return {"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer"}
 
 
+@router.get("/logout", name="Logout", status_code=status.HTTP_200_OK)
+async def logout(credentials: HTTPAuthorizationCredentials = Security(security),
+                 db: Session = Depends(get_db)):
+    token = credentials.credentials
+    await repository_users.block_token(token, db)
+    return {"detail": "Exit completed successfully"}
+
+
 @router.get('/refresh_token', response_model=TokenModel)
 async def refresh_token(credentials: HTTPAuthorizationCredentials = Security(security), db: Session = Depends(get_db)):
     token = credentials.credentials
