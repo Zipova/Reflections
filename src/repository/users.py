@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from src.database.models import User
 from src.schemas import UserModel
+import src.services.auth as auth
 
 
 async def get_user_by_email(email: str, db: Session) -> Type[User] | None:
@@ -95,3 +96,9 @@ async def update_avatar(email, url: str, db: Session) -> User:
     user.avatar = url
     db.commit()
     return user
+
+
+async def block_token(token: str, db: Session):
+    email = auth.auth_service.verify_access_token(token)
+    user = await get_user_by_email(email, db)
+    await update_token(user, None, db)
