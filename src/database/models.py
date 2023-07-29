@@ -1,6 +1,6 @@
 import enum
 
-from sqlalchemy import Column, Integer, String, Boolean, func, Table
+from sqlalchemy import Column, Integer, String, Boolean, func, Table, ARRAY
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import ForeignKey
 from sqlalchemy.sql.sqltypes import DateTime, Enum, Float
@@ -38,6 +38,7 @@ class User(Base):
     confirmed = Column(Boolean, default=False)
     photos = relationship('Photo', back_populates='user')
     comments = relationship('Comment', back_populates='user')
+    photo_ratings = relationship("Rate", back_populates="user")
 
 
 class Photo(Base):
@@ -46,7 +47,9 @@ class Photo(Base):
     url = Column(String, nullable=False)
     user_id = Column(ForeignKey("users.id", ondelete="CASCADE"))
     description = Column(String(150), nullable=False)
-    rating = Column(Float(), nullable=True)
+    ratings = relationship("Rate", back_populates="photo")
+    rated_by = Column(ARRAY(Integer), default=[])
+    average_rating = Column(Float, default=0.0)
     tags = relationship("Tag", secondary=photo_m2m_tag, backref="photos")
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
@@ -70,3 +73,13 @@ class Comment(Base):
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
     photo = relationship('Photo', back_populates='comments')
     user = relationship('User', back_populates='comments')
+
+
+class Rate(Base):
+    __tablename__ = "rate"
+    id = Column(Integer, primary_key=True)
+    photo_id = Column(Integer, ForeignKey("photos.id", ondelete="CASCADE"))
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
+    rate = Column(Integer)
+    photo = relationship("Photo", back_populates="ratings")
+    user = relationship("User", back_populates="photo_ratings")
