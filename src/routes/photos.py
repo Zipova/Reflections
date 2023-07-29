@@ -9,8 +9,10 @@ from sqlalchemy.orm import Session
 
 from src.database.db import get_db
 from src.database.models import User, Role
-from src.schemas import PhotoModel, PhotoDb, PhotoResponse, PhotoSearch
+from src.schemas import PhotoModel, PhotoDb, PhotoResponse, PhotoSearch, CommentModel, CommentResponse, \
+    PhotoResp
 from src.repository import photos as repository_photos
+from src.repository import comments as repository_comments
 from src.services.auth import auth_service
 from src.services.roles import RolesChecker
 
@@ -50,7 +52,7 @@ async def add_photo(
     return {"photo": photo, "detail": "Photo has been upload successfully"}
 
 
-@router.get("/{photo_id}", response_model=PhotoDb)
+@router.get("/{photo_id}", response_model=PhotoResp)
 async def get_photo_by_id(
     photo_id: int,
     current_user: User = Depends(auth_service.get_current_user),
@@ -117,3 +119,27 @@ async def search_photo_by_keyword(
             status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found"
         )
     return photo
+
+
+@router.post("/{photo_id}", response_model=CommentResponse) #додати комент до фотки
+async def add_comment(photo_id: int, body: CommentModel,
+                      current_user: User = Depends(auth_service.get_current_user), db: Session = Depends(get_db)):
+    comm = await repository_comments.add_comment(photo_id, body, current_user, db)
+    return comm
+
+
+@router.patch("/{photo_id}/{comment_id}", response_model=CommentResponse) #змінити комент
+async def change_comment(photo_id: int, comment_id: int, body: CommentModel,
+                         current_user: User = Depends(auth_service.get_current_user), db: Session = Depends(get_db)):
+    comm = await repository_comments.change_comment(photo_id, comment_id, body, current_user, db)
+    return comm
+
+
+@router.delete("/{photo_id}/{comment_id}", response_model=CommentResponse) #видалити комент
+async def delete_comment(photo_id: int, comment_id: int, current_user: User = Depends(auth_service.get_current_user),
+                         db: Session = Depends(get_db)):
+    if current_user.role == Role.admin or current_user.role == Role.moderator:
+        comm = await repository_comments.delete_comment(photo_id, comment_id, current_user, db)
+        return comm
+    else:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admin or moderator can delete comments!")

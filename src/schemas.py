@@ -1,3 +1,6 @@
+from datetime import datetime
+from typing import List
+
 from pydantic import BaseModel, Field, EmailStr
 
 
@@ -34,6 +37,21 @@ class RequestEmail(BaseModel):
     email: EmailStr
 
 
+class CommentModel(BaseModel):
+    comment: str
+
+
+class CommentResponse(CommentModel):
+    user_id: int
+    photo_id: int
+    comment: str
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        orm_mode = True
+
+
 class PhotoModel(BaseModel):
     description: str
 
@@ -52,6 +70,15 @@ class PhotoResponse(BaseModel):
     detail: str = "Photo was created successfully"
 
 
+class PhotoResp(BaseModel):
+    url: str
+    description: str | None
+    comments: List[CommentResponse]
+
+    class Config:
+        orm_mode = True
+
+
 class DescriptionUpdate(BaseModel):
     done: bool
 
@@ -66,3 +93,7 @@ class PhotoSearch(BaseModel):
 
 class Config:
     orm_mode = True
+
+
+
+

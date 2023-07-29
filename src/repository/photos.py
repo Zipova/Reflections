@@ -33,7 +33,8 @@ async def get_user_photos(limit: int, offset: int, user, db: Session):
 
 
 async def get_photo(photo_id: int, db: Session):
-    return db.query(Photo).filter(Photo.id == photo_id).first()
+    photo = db.query(Photo).filter(Photo.id == photo_id).first()
+    return photo
 
 
 async def remove_photo(photo_id: int, user: User, db: Session):
