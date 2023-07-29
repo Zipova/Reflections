@@ -40,9 +40,8 @@ class PhotoModel(BaseModel):
 
 class PhotoDb(BaseModel):
     id: int
-    photo: str
+    url: str
     description: str | None
-    qr_code: str | None
 
     class Config:
         orm_mode = True
@@ -62,7 +61,7 @@ class PhotoSearch(BaseModel):
     photo: str
     qr_code: str | None
     description: str | None
-    average_rating: float
+    average_rating: float | None
 
 
 class Config:

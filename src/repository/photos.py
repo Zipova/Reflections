@@ -14,7 +14,7 @@ time_stamp = calendar.timegm(current_GMT)
 
 async def upload_photo(user_id: int, src_url: str, description: str, db: Session) -> Photo:
     new_photo = Photo(
-        photo=src_url, user_id=user_id, description=description
+        url=src_url, user_id=user_id, description=description
     )
     db.add(new_photo)
     db.commit()
@@ -22,8 +22,13 @@ async def upload_photo(user_id: int, src_url: str, description: str, db: Session
     return new_photo
 
 
-async def get_all_photos(limit: int, offset: int, user, db: Session):
+async def get_all_photos(limit: int, offset: int, db: Session):
     photos = db.query(Photo).limit(limit).offset(offset).all()
+    return photos
+
+
+async def get_user_photos(limit: int, offset: int, user, db: Session):
+    photos = db.query(Photo).filter(Photo.user_id == user.id).limit(limit).offset(offset).all()
     return photos
 
 
@@ -32,7 +37,7 @@ async def get_photo(photo_id: int, db: Session):
 
 
 async def remove_photo(photo_id: int, user: User, db: Session):
-    if user.roles == Role.admin:
+    if user.role == Role.admin:
         photo = db.query(Photo).filter(Photo.id == photo_id).first()
     else:
         photo = (
@@ -47,7 +52,7 @@ async def remove_photo(photo_id: int, user: User, db: Session):
 
 
 async def update_description(photo_id: int, body: DescriptionUpdate, user: User, db: Session):
-    if user.roles == Role.admin:
+    if user.role == Role.admin:
         photo = db.query(Photo).filter(Photo.id == photo_id).first()
     else:
         photo = (

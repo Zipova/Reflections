@@ -32,20 +32,20 @@ async def get_photos(
     current_user: User = Depends(auth_service.get_current_user),
     db: Session = Depends(get_db),
 ):
-    photos = await repository_photos.get_all_photos(limit, offset, current_user, db)
+    photos = await repository_photos.get_user_photos(limit, offset, current_user, db)
     return photos
 
 
 @router.post("/upload", response_model=PhotoResponse, name="Upload photo", status_code=status.HTTP_201_CREATED,
              dependencies=[Depends(allowed_post_photo)])
 async def add_photo(
-    body: str = Form(default=None),
+    description: str = Form(default=None),
     src_url: str = Form(default=None),
     db: Session = Depends(get_db),
     current_user: User = Depends(auth_service.get_current_user),
 ):
     photo = await repository_photos.upload_photo(
-        current_user.id, src_url, body, db
+        current_user.id, src_url, description, db
     )
     return {"photo": photo, "detail": "Photo has been upload successfully"}
 
@@ -103,7 +103,7 @@ async def update_photo_description(
     return photo
 
 
-@router.get("/search_keyword/", name="Search photos by keyword", response_model=List[PhotoSearch])
+@router.get("/search_keyword/", name="Search photos by keyword", response_model=List[PhotoDb]) #response_model=List[PhotoSearch]
 async def search_photo_by_keyword(
     search_by: str,
     filter_by: str = Query(None, enum=["rating", "created_at"]),
