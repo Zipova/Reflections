@@ -103,6 +103,25 @@ class PhotoSearch(BaseModel):
     average_rating: float | None
 
 
+class RateModel(BaseModel):
+    photo_id: int
+    rating: int = Field(ge=1, le=5)
+
+
+class RateResponseModel(BaseModel):
+    photo_id: int
+    user_id: int
+    rating: int
+
+    class Config:
+        orm_mode = True
+
+
+class AvgRateResponse(BaseModel):
+    photo_id: int
+    avg_rating: float
+
+
 class Config:
     orm_mode = True
 
