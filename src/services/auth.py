@@ -37,6 +37,19 @@ class Auth:
         encoded_access_token = jwt.encode(to_encode, self.SECRET_KEY, algorithm=self.ALGORITHM)
         return encoded_access_token
 
+    def verify_access_token(self, token: str = Depends(oauth2_scheme)) -> str:
+        try:
+            payload = jwt.decode(token, self.SECRET_KEY, algorithms=[self.ALGORITHM])
+            if payload['scope'] == 'access_token':
+                email = payload['sub']
+                if email is None:
+                    raise self.credentials_exception
+            else:
+                raise self.credentials_exception
+        except JWTError as e:
+            raise self.credentials_exception
+        return email
+
     async def create_refresh_token(self, data: dict, expires_delta: Optional[float] = None):
         to_encode = data.copy()
         if expires_delta:

@@ -16,7 +16,7 @@ app.include_router(rate.router, prefix="/api")
 
 @app.get("/")
 async def all_photos(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    photos = await repository_photos.get_all_photos(skip, limit, db)
-    return photos
+    result = await repository_photos.get_all_photos(limit, skip, db)
+    return result
 
 

@@ -1,4 +1,8 @@
+from datetime import datetime
+from typing import List, Optional
+
 from pydantic import BaseModel, Field, EmailStr
+
 
 
 class UserModel(BaseModel):
@@ -15,13 +19,22 @@ class UserResponse(BaseModel):
     is_active: bool
 
 
+
+class Username(BaseModel):
+    id: int
+    username: str
+
+
 class UserUpdate(BaseModel):
-    email: str
-    avatar: str
+    username: str
 
 
 class UserStatusUpdate(BaseModel):
     is_active: bool
+
+
+class UserRoleUpdate(BaseModel):
+    role: str
 
 
 class TokenModel(BaseModel):
@@ -34,23 +47,48 @@ class RequestEmail(BaseModel):
     email: EmailStr
 
 
-class PhotoModel(BaseModel):
-    description: str
+class CommentModel(BaseModel):
+    comment: str
 
 
-class PhotoDb(BaseModel):
-    id: int
-    photo: str
-    description: str | None
-    qr_code: str | None
+class CommentResponse(CommentModel):
+    user: Username
+    photo_id: int
+    comment: str
+    created_at: datetime
+    updated_at: datetime
 
     class Config:
         orm_mode = True
 
 
+class PhotoModel(BaseModel):
+    description: str
+    tags: List[str] = []
+
+class PhotoDb(BaseModel):
+    id: int
+    photo: str
+    description: Optional[str] = None
+    qr_code: Optional[str] = None
+    transformed_image_url: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+
 class PhotoResponse(BaseModel):
     photo: PhotoDb
     detail: str = "Photo was created successfully"
+
+
+class PhotoResp(BaseModel):
+    url: str
+    description: str | None
+    comments: List[CommentResponse]
+
+    class Config:
+        orm_mode = True
 
 
 class DescriptionUpdate(BaseModel):
@@ -62,7 +100,7 @@ class PhotoSearch(BaseModel):
     photo: str
     qr_code: str | None
     description: str | None
-    average_rating: float
+    average_rating: float | None
 
 
 class RateModel(BaseModel):
@@ -86,3 +124,4 @@ class AvgRateResponse(BaseModel):
 
 class Config:
     orm_mode = True
+
