@@ -1,7 +1,8 @@
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel, Field, EmailStr
+
 
 
 class UserModel(BaseModel):
@@ -16,6 +17,7 @@ class UserResponse(BaseModel):
     email: str
     avatar: str
     is_active: bool
+
 
 
 class Username(BaseModel):
@@ -62,15 +64,17 @@ class CommentResponse(CommentModel):
 
 class PhotoModel(BaseModel):
     description: str
-
+    tags: List[str] = []
 
 class PhotoDb(BaseModel):
     id: int
-    url: str
-    description: str | None
+    photo: str
+    description: Optional[str] = None
+    qr_code: Optional[str] = None
+    transformed_image_url: Optional[str] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class PhotoResponse(BaseModel):
@@ -101,7 +105,4 @@ class PhotoSearch(BaseModel):
 
 class Config:
     orm_mode = True
-
-
-
 

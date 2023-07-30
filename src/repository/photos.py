@@ -1,30 +1,46 @@
 import time
 import calendar
+from typing import List
+
 
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
-from src.database.models import Photo, User, Role
+from src.database.models import Photo, User, Role, Tag
 from src.schemas import DescriptionUpdate
+from src.repository.tags import get_tag_by_name, create_tag
+
 
 
 current_GMT = time.gmtime()
 time_stamp = calendar.timegm(current_GMT)
 
 
-async def upload_photo(user_id: int, src_url: str, description: str, db: Session) -> Photo:
+async def upload_photo(user_id: int, src_url: str, tags: List[str], description: str, db: Session) -> Photo:
     new_photo = Photo(
-        url=src_url, user_id=user_id, description=description
-    )
+        photo=src_url, user_id=user_id, description=description)
     db.add(new_photo)
+    db.commit()
+    db.refresh(new_photo)
+    unique_tags = set() 
+    for tag_name in tags[:5]:
+        if tag_name not in unique_tags:
+            tag = get_tag_by_name(db, tag_name)
+            if not tag:
+                tag = create_tag(db, tag_name)
+            new_photo.tags.append(tag)
+            unique_tags.add(tag_name)
+
     db.commit()
     db.refresh(new_photo)
     return new_photo
 
 
+
 async def get_all_photos(limit: int, offset: int, db: Session):
     photos = db.query(Photo).limit(limit).offset(offset).all()
     return photos
+
 
 
 async def get_user_photos(limit: int, offset: int, user, db: Session):
