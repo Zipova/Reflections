@@ -18,7 +18,7 @@ time_stamp = calendar.timegm(current_GMT)
 
 async def upload_photo(user_id: int, src_url: str, tags: List[str], description: str, db: Session) -> Photo:
     new_photo = Photo(
-        photo=src_url, user_id=user_id, description=description)
+        url=src_url, user_id=user_id, description=description)
     db.add(new_photo)
     db.commit()
     db.refresh(new_photo)
@@ -36,11 +36,9 @@ async def upload_photo(user_id: int, src_url: str, tags: List[str], description:
     return new_photo
 
 
-
 async def get_all_photos(limit: int, offset: int, db: Session):
     photos = db.query(Photo).limit(limit).offset(offset).all()
     return photos
-
 
 
 async def get_user_photos(limit: int, offset: int, user, db: Session):

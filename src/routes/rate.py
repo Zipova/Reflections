@@ -37,8 +37,9 @@ async def rate_photo(photo_rating: RateModel, current_user: User = Depends(auth_
     photo = await repository_photos.get_photo(photo_rating.photo_id, db)
     if photo.user_id == current_user.id:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="You cannot rate your own photo")
-    if current_user.id in photo.rated_by:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="You have already rated this photo")
+    if photo.rated_by:
+        if current_user.id in photo.rated_by:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="You have already rated this photo")
     rating = await repository_rating.create_rating(photo, photo_rating, current_user, db)
     return rating
 

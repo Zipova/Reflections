@@ -4,20 +4,10 @@ from typing import List, Optional
 from pydantic import BaseModel, Field, EmailStr
 
 
-
 class UserModel(BaseModel):
     username: str = Field(min_length=6, max_length=25)
     email: EmailStr
     password: str = Field(min_length=6, max_length=15)
-
-
-class UserResponse(BaseModel):
-    id: int
-    username: str
-    email: str
-    avatar: str
-    is_active: bool
-
 
 
 class Username(BaseModel):
@@ -26,7 +16,11 @@ class Username(BaseModel):
 
 
 class UserUpdate(BaseModel):
-    username: str
+    username: str | None
+    about: str | None
+    birthday: str | None
+    country: str | None
+    phone: str | None
 
 
 class UserStatusUpdate(BaseModel):
@@ -52,6 +46,7 @@ class CommentModel(BaseModel):
 
 
 class CommentResponse(CommentModel):
+    id: int
     user: Username
     photo_id: int
     comment: str
@@ -63,12 +58,14 @@ class CommentResponse(CommentModel):
 
 
 class PhotoModel(BaseModel):
+    url: str
     description: str
     tags: List[str] = []
 
+
 class PhotoDb(BaseModel):
     id: int
-    photo: str
+    url: str
     description: Optional[str] = None
     qr_code: Optional[str] = None
     transformed_image_url: Optional[str] = None
@@ -105,13 +102,13 @@ class PhotoSearch(BaseModel):
 
 class RateModel(BaseModel):
     photo_id: int
-    rating: int = Field(ge=1, le=5)
+    rate: int = Field(ge=1, le=5)
 
 
 class RateResponseModel(BaseModel):
     photo_id: int
     user_id: int
-    rating: int
+    rate: int
 
     class Config:
         orm_mode = True
@@ -122,6 +119,21 @@ class AvgRateResponse(BaseModel):
     avg_rating: float
 
 
-class Config:
-    orm_mode = True
+    class Config:
+        orm_mode = True
+
+
+class UserResponse(BaseModel):
+    id: int
+    username: str
+    email: str
+    avatar: str
+    about: str | None
+    birthday: str | None
+    country: str | None
+    phone: str | None
+    photos: List[PhotoDb]
+
+    class Config:
+        orm_mode = True
 

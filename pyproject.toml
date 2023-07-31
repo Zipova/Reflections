@@ -19,6 +19,8 @@ psycopg2-binary = "^2.9.6"
 pydantic = {extras = ["email"], version = "^2.1.0"}
 libgravatar = "^1.0.4"
 pydantic-settings = "^2.0.2"
+cloudinary = "^1.33.0"
+qrcode = "^7.4.2"
 
 
 [build-system]

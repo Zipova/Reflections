@@ -11,14 +11,18 @@ async def create_rating(photo: Photo, body: RateModel, user: User, db: Session):
     db.commit()
     db.refresh(rating)
     photo = await update_avg_photo_rating(photo, db)
-    photo.rated_by = photo.rated_by + [user.id]
+    if photo.rated_by:
+        photo.rated_by = photo.rated_by + [user.id]
+    else:
+        photo.rated_by = [user.id]
     db.commit()
+    print(photo.rated_by)
     return rating
 
 
 async def update_avg_photo_rating(photo: Photo, db: Session):
     total_ratings = len(photo.ratings)
-    total_rating_sum = sum([r.rating for r in photo.ratings])
+    total_rating_sum = sum([r.rate for r in photo.ratings])
     avg_rating = total_rating_sum / total_ratings if total_ratings > 0 else 0.0
     photo.average_rating = avg_rating
     db.commit()

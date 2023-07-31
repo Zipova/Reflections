@@ -46,19 +46,18 @@ async def get_photos(
 @router.post("/upload", response_model=PhotoResponse, name="Upload photo", status_code=status.HTTP_201_CREATED,
              dependencies=[Depends(allowed_post_photo)])
 async def add_photo(
-    body: str = Form(default=None),
-    src_url: str = Form(default=None),
+    description: str = Form(),
+    src_url: str = Form(),
     tags: List[str] = Form(default=[]),
 
     db: Session = Depends(get_db),
     current_user: User = Depends(auth_service.get_current_user),
 ):
     photo = await repository_photos.upload_photo(
-        current_user.id, src_url, body, tags, db
+        current_user.id, src_url, tags, description, db
 
     )
     return {"photo": photo, "detail": "Photo has been upload successfully"}
-
 
 
 @router.get("/{photo_id}", response_model=PhotoResp)
@@ -114,7 +113,6 @@ async def update_photo_description(
     return photo
 
 
-
 @router.get("/search_keyword/", name="Search photos by keyword", response_model=List[PhotoDb]) #response_model=List[PhotoSearch]
 async def search_photo_by_keyword(
     search_by: str,
@@ -131,7 +129,6 @@ async def search_photo_by_keyword(
     return photo
 
 
-
 @router.get("/{photo_id}/resize", response_class=FileResponse)
 async def resize_photo(
     photo_id: int,
@@ -145,7 +142,7 @@ async def resize_photo(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found"
         )
-    public_url = CloudinaryImage(photo.photo).build_url(
+    public_url = CloudinaryImage(photo.url).build_url(
         width=width, height=height, crop="fill"
     )
     return FileResponse(public_url)
@@ -238,12 +235,11 @@ async def change_comment(photo_id: int, comment_id: int, body: CommentModel,
     return comm
 
 
-@router.delete("/{photo_id}/{comment_id}", response_model=CommentResponse) #видалити комент
+@router.delete("/{photo_id}/{comment_id}") #видалити комент
 async def delete_comment(photo_id: int, comment_id: int, current_user: User = Depends(auth_service.get_current_user),
                          db: Session = Depends(get_db)):
-    if current_user.role == Role.admin or current_user.role == Role.moderator:
-        comm = await repository_comments.delete_comment(photo_id, comment_id, current_user, db)
-        return comm
-    else:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admin or moderator can delete comments!")
+    if current_user.role == Role.user:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You cannot delete comments!")
+    await repository_comments.delete_comment(photo_id, comment_id, current_user, db)
+    return 'Success'
 
