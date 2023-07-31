@@ -2,7 +2,12 @@ import time
 import calendar
 from typing import List
 
+<<<<<<< Updated upstream
 from sqlalchemy import and_
+=======
+
+from sqlalchemy import and_, func
+>>>>>>> Stashed changes
 from sqlalchemy.orm import Session
 
 from src.database.models import Photo, User, Role, Tag
@@ -15,9 +20,14 @@ time_stamp = calendar.timegm(current_GMT)
 
 
 async def upload_photo(user_id: int, src_url: str, tags: List[str], description: str, db: Session) -> Photo:
+
     new_photo = Photo(
+<<<<<<< Updated upstream
         photo=src_url, user_id=user_id, description=description
     )
+=======
+        url=src_url, user_id=user_id, description=description)
+>>>>>>> Stashed changes
     db.add(new_photo)
     db.commit()
     db.refresh(new_photo)
@@ -82,3 +92,10 @@ async def search_photo_by_keyword(search_by: str, filter_by: str, db: Session):
     else:
         result = db.query(Photo).filter(Photo.description == search_by).all()
     return result
+
+
+async def search_photo_by_tags(tags: List[str], db: Session):
+    photos = db.query(Photo).filter(func.lower(
+        Tag.name).in_([tag.lower() for tag in tags])).all()
+    return photos
+
