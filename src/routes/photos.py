@@ -1,8 +1,13 @@
 import calendar
 import time
-from fastapi import APIRouter, Depends, HTTPException, status, Form, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Form, Query, File, UploadFile
 from cloudinary import CloudinaryImage
 from fastapi.responses import FileResponse
+
+import cloudinary
+from cloudinary.uploader import upload
+from cloudinary.utils import cloudinary_url
+import cloudinary.api
 
 from typing import List
 
@@ -25,6 +30,12 @@ time_stamp = calendar.timegm(current_GMT)
 
 router = APIRouter(prefix="/photos", tags=["photos"])
 
+cloudinary.config(
+    cloud_name="djtkgrzfx",
+    api_key="193464234561115",
+    api_secret="YS_pgZr3L0xE81UN4vZDGm_Rb9o"
+)
+
 allowed_get_photo = RolesChecker([Role.admin, Role.moderator, Role.user])
 allowed_post_photo = RolesChecker([Role.admin, Role.moderator, Role.user])
 allowed_remove_photo = RolesChecker([Role.admin, Role.user])
@@ -46,16 +57,25 @@ async def get_photos(
 @router.post("/upload", response_model=PhotoResponse, name="Upload photo", status_code=status.HTTP_201_CREATED,
              dependencies=[Depends(allowed_post_photo)])
 async def add_photo(
-    description: str = Form(),
-    src_url: str = Form(),
-    tags: List[str] = Form(default=[]),
 
+    description: str = Form(default=None),
+    src_url: str = Form(default=None),
+    tags: List[str] = Form(default=[]),
+    photo_file: UploadFile = File(None),
     db: Session = Depends(get_db),
     current_user: User = Depends(auth_service.get_current_user),
 ):
+    if src_url:
+        response = upload(src_url, folder="Reflections")
+        src_url = response['public_id']
+    elif photo_file:
+        response = upload(photo_file.file, folder="Reflections")
+        src_url = response['public_id']
+    else:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="You must provide either src_url or photo_file.")
     photo = await repository_photos.upload_photo(
         current_user.id, src_url, tags, description, db
-
     )
     return {"photo": photo, "detail": "Photo has been upload successfully"}
 
@@ -128,6 +148,19 @@ async def search_photo_by_keyword(
         )
     return photo
 
+
+@router.get("/search_by_tags/", name="Search photos by tags", response_model=List[PhotoDb])
+async def search_photo_by_tags(
+    tags: List[str] = Query(...),
+    current_user: User = Depends(auth_service.get_current_user),
+    db: Session = Depends(get_db),
+):
+    photos = await repository_photos.search_photo_by_tags(tags, db)
+    if not photos:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Photos not found"
+        )
+    return photos
 
 @router.get("/{photo_id}/resize", response_class=FileResponse)
 async def resize_photo(
