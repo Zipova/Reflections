@@ -1,0 +1,30 @@
+[tool.poetry]
+name = "reflections"
+version = "0.1.0"
+description = ""
+authors = ["= <=>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+fastapi = "^0.100.0"
+uvicorn = {extras = ["standard"], version = "^0.23.1"}
+sqlalchemy = "^2.0.19"
+alembic = "^1.11.1"
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+python-multipart = "^0.0.6"
+redis = "^4.6.0"
+psycopg2-binary = "^2.9.6"
+pydantic = {extras = ["email"], version = "^2.1.0"}
+libgravatar = "^1.0.4"
+pydantic-settings = "^2.0.2"
+httpx = "^0.24.1"
+cloudinary = "^1.33.0"
+qrcode = "^7.4.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+

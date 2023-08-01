@@ -2,17 +2,15 @@ import time
 import calendar
 from typing import List
 
-<<<<<<< Updated upstream
 from sqlalchemy import and_
-=======
 
 from sqlalchemy import and_, func
->>>>>>> Stashed changes
 from sqlalchemy.orm import Session
 
 from src.database.models import Photo, User, Role, Tag
 from src.schemas import DescriptionUpdate
 from src.repository.tags import get_tag_by_name, create_tag
+
 
 
 current_GMT = time.gmtime()
@@ -22,12 +20,7 @@ time_stamp = calendar.timegm(current_GMT)
 async def upload_photo(user_id: int, src_url: str, tags: List[str], description: str, db: Session) -> Photo:
 
     new_photo = Photo(
-<<<<<<< Updated upstream
-        photo=src_url, user_id=user_id, description=description
-    )
-=======
         url=src_url, user_id=user_id, description=description)
->>>>>>> Stashed changes
     db.add(new_photo)
     db.commit()
     db.refresh(new_photo)
@@ -45,17 +38,23 @@ async def upload_photo(user_id: int, src_url: str, tags: List[str], description:
     return new_photo
 
 
-async def get_all_photos(limit: int, offset: int, user, db: Session):
+async def get_all_photos(limit: int, offset: int, db: Session):
     photos = db.query(Photo).limit(limit).offset(offset).all()
     return photos
 
 
+async def get_user_photos(limit: int, offset: int, user, db: Session):
+    photos = db.query(Photo).filter(Photo.user_id == user.id).limit(limit).offset(offset).all()
+    return photos
+
+
 async def get_photo(photo_id: int, db: Session):
-    return db.query(Photo).filter(Photo.id == photo_id).first()
+    photo = db.query(Photo).filter(Photo.id == photo_id).first()
+    return photo
 
 
 async def remove_photo(photo_id: int, user: User, db: Session):
-    if user.roles == Role.admin:
+    if user.role == Role.admin:
         photo = db.query(Photo).filter(Photo.id == photo_id).first()
     else:
         photo = (
@@ -70,7 +69,7 @@ async def remove_photo(photo_id: int, user: User, db: Session):
 
 
 async def update_description(photo_id: int, body: DescriptionUpdate, user: User, db: Session):
-    if user.roles == Role.admin:
+    if user.role == Role.admin:
         photo = db.query(Photo).filter(Photo.id == photo_id).first()
     else:
         photo = (
