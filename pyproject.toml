@@ -20,6 +20,8 @@ pydantic = {extras = ["email"], version = "^2.1.0"}
 libgravatar = "^1.0.4"
 pydantic-settings = "^2.0.2"
 httpx = "^0.24.1"
+cloudinary = "^1.33.0"
+qrcode = "^7.4.2"
 
 
 [build-system]
