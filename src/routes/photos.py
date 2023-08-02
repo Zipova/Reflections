@@ -13,6 +13,7 @@ from typing import List
 
 from sqlalchemy.orm import Session
 
+from src.conf.config import settings
 from src.database.db import get_db
 from src.database.models import User, Role
 from src.schemas import PhotoModel, PhotoDb, PhotoResponse, PhotoSearch, CommentModel, CommentResponse, \
@@ -31,9 +32,10 @@ time_stamp = calendar.timegm(current_GMT)
 router = APIRouter(prefix="/photos", tags=["photos"])
 
 cloudinary.config(
-    cloud_name="djtkgrzfx",
-    api_key="193464234561115",
-    api_secret="YS_pgZr3L0xE81UN4vZDGm_Rb9o"
+        cloud_name=settings.cloudinary_name,
+        api_key=settings.cloudinary_api_key,
+        api_secret=settings.cloudinary_api_secret,
+        secure=True
 )
 
 allowed_get_photo = RolesChecker([Role.admin, Role.moderator, Role.user])
