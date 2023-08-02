@@ -57,9 +57,8 @@ async def get_photos(
 @router.post("/upload", response_model=PhotoResponse, name="Upload photo", status_code=status.HTTP_201_CREATED,
              dependencies=[Depends(allowed_post_photo)])
 async def add_photo(
-
-    description: str = Form(default=None),
     src_url: str = Form(default=None),
+    description: str = Form(default=None),
     tags: List[str] = Form(default=[]),
     photo_file: UploadFile = File(None),
     db: Session = Depends(get_db),
@@ -68,16 +67,19 @@ async def add_photo(
     if src_url:
         response = upload(src_url, folder="Reflections")
         src_url = response['public_id']
+        url = cloudinary.CloudinaryImage(src_url).build_url()
     elif photo_file:
         response = upload(photo_file.file, folder="Reflections")
         src_url = response['public_id']
+        url = cloudinary.CloudinaryImage(src_url).build_url()
     else:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="You must provide either src_url or photo_file.")
+
     photo = await repository_photos.upload_photo(
         current_user.id, src_url, tags, description, db
     )
-    return {"photo": photo, "detail": "Photo has been upload successfully"}
+    return {"photo": photo, "detail": url}
 
 
 @router.get("/{photo_id}", response_model=PhotoResp)
@@ -149,20 +151,20 @@ async def search_photo_by_keyword(
     return photo
 
 
-@router.get("/search_by_tags/", name="Search photos by tags", response_model=List[PhotoDb])
+@router.get("/search_by_tag/", name="Search photos by tag", response_model=List[PhotoDb])
 async def search_photo_by_tags(
-    tags: List[str] = Query(...),
-    current_user: User = Depends(auth_service.get_current_user),
+    tag: str,
     db: Session = Depends(get_db),
 ):
-    photos = await repository_photos.search_photo_by_tags(tags, db)
+    photos = await repository_photos.search_photo_by_tag(tag, db)
     if not photos:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Photos not found"
         )
     return photos
 
-@router.get("/{photo_id}/resize", response_class=FileResponse)
+
+@router.post("/{photo_id}/resize", status_code=status.HTTP_201_CREATED)
 async def resize_photo(
     photo_id: int,
     width: int,
@@ -170,18 +172,33 @@ async def resize_photo(
     current_user: User = Depends(auth_service.get_current_user),
     db: Session = Depends(get_db),
 ):
-    photo = await repository_photos.get_photo(photo_id, db)
+    photo = await repository_photos.get_user_photo(photo_id, current_user, db)
     if photo is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found"
         )
+
     public_url = CloudinaryImage(photo.url).build_url(
         width=width, height=height, crop="fill"
     )
-    return FileResponse(public_url)
+
+    photo.transformed_image_url = public_url
+
+    qr_code_img = qrcode.make(public_url)
+    qr_code_buffer = BytesIO()
+    qr_code_img.save(qr_code_buffer)
+    qr_code_buffer.seek(0)
+
+    qr_code_base64 = base64.b64encode(qr_code_buffer.getvalue()).decode()
+    photo.qr_code = qr_code_base64
+    db.commit()
+    return {
+        "transformed_link": public_url,
+        "qr_code": qr_code_base64,
+    }
 
 
-@router.get("/{photo_id}/crop", response_class=FileResponse)
+@router.post("/{photo_id}/crop", status_code=status.HTTP_201_CREATED)
 async def crop_photo(
     photo_id: int,
     x: int,
@@ -191,54 +208,49 @@ async def crop_photo(
     current_user: User = Depends(auth_service.get_current_user),
     db: Session = Depends(get_db),
 ):
-    photo = await repository_photos.get_photo(photo_id, db)
+    photo = await repository_photos.get_user_photo(photo_id, current_user, db)
     if photo is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found"
         )
-    public_url = CloudinaryImage(photo.photo).build_url(
+    public_url = CloudinaryImage(photo.url).build_url(
         width=width, height=height, crop="crop", gravity="auto",
         x=x, y=y
     )
-    return FileResponse(public_url)
+
+    photo.transformed_image_url = public_url
+
+    qr_code_img = qrcode.make(public_url)
+    qr_code_buffer = BytesIO()
+    qr_code_img.save(qr_code_buffer)
+    qr_code_buffer.seek(0)
+
+    qr_code_base64 = base64.b64encode(qr_code_buffer.getvalue()).decode()
+    photo.qr_code = qr_code_base64
+    db.commit()
+    return {
+        "transformed_link": public_url,
+        "qr_code": qr_code_base64,
+    }
 
 
-@router.get("/{photo_id}/rotate", response_class=FileResponse)
+@router.post("/{photo_id}/rotate", status_code=status.HTTP_201_CREATED)
 async def rotate_photo(
     photo_id: int,
     angle: int,
     current_user: User = Depends(auth_service.get_current_user),
     db: Session = Depends(get_db),
 ):
-    photo = await repository_photos.get_photo(photo_id, db)
+    photo = await repository_photos.get_user_photo(photo_id, current_user, db)
     if photo is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found"
         )
-    public_url = CloudinaryImage(photo.photo).build_url(
+    public_url = CloudinaryImage(photo.url).build_url(
         angle=angle
     )
-    return FileResponse(public_url)
 
-
-@router.post("/transform_and_create_link", response_model=PhotoResponse, status_code=status.HTTP_201_CREATED)
-async def transform_and_create_link(
-    photo_id: int,
-    width: int,
-    height: int,
-    current_user: User = Depends(auth_service.get_current_user),
-    db: Session = Depends(get_db),
-):
-    photo = await repository_photos.get_photo(photo_id, db)
-    if photo is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Photo not found"
-        )
-    public_url = CloudinaryImage(photo.photo).build_url(
-        width=width, height=height, crop="fill"
-    )
-
-    photo.transformed_link = public_url
+    photo.transformed_image_url = public_url
 
     qr_code_img = qrcode.make(public_url)
     qr_code_buffer = BytesIO()

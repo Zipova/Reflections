@@ -54,6 +54,8 @@ class Photo(Base):
     ratings = relationship("Rate", back_populates="photo")
     rated_by = Column(ARRAY(Integer), default=[])
     average_rating = Column(Float, default=0.0)
+    qr_code = Column(String)
+    transformed_image_url = Column(String)
     tags = relationship("Tag", secondary=photo_m2m_tag, backref="photos")
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())

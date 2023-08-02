@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, ClassVar
 
 from pydantic import BaseModel, Field, EmailStr
 
@@ -54,7 +54,7 @@ class CommentResponse(CommentModel):
     updated_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class PhotoModel(BaseModel):
@@ -85,7 +85,7 @@ class PhotoResp(BaseModel):
     comments: List[CommentResponse]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class DescriptionUpdate(BaseModel):
@@ -111,16 +111,15 @@ class RateResponseModel(BaseModel):
     rate: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class AvgRateResponse(BaseModel):
     photo_id: int
     avg_rating: float
 
-
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class UserResponse(BaseModel):
@@ -132,8 +131,7 @@ class UserResponse(BaseModel):
     birthday: str | None
     country: str | None
     phone: str | None
-    photos: List[PhotoDb]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 

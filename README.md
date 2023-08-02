@@ -48,18 +48,19 @@ Reflection of Life is web application that helps people to share their photos wi
 
 ### Operations with photos
 
-| Route | Parameters | Output                        |
-| ----- | ---------- |-------------------------------|
-| GET /api/photos/ | - | Show current user's photos.   |
-| POST /api/photos/upload | description, src-url, tags | Add new photo.                |
-| GET /api/photos/{photo_id} | photo_id | Show photo ifo with comments. |
-| DELETE /api/photos/{photo_id} | photo_id | Delete photo. |
-| PUT /api/photos/{photo_id} | photo_id | Change photo description. |
-| GET /api/photos/search_keyword | search_by, filter_by | Search photo by keyword. |
-| GET /api/photos/{photo_id}/resize | photo_id(query), width, height | Change photo size. |
-| GET /api/photos/{photo_id}/crop | photo_id(query), x, y, width, height | Crop photo. |
-| GET /api/photos/{photo_id}/rotate | photo_id(query), angle | Rotate photo. |
-| GET /api/photos/transform_and_create_link | photo_id, width, height | Transform photo and create link. |
+| Route                              | Parameters                           | Output                        |
+|------------------------------------|--------------------------------------|-------------------------------|
+| GET /api/photos/                   | -                                    | Show current user's photos.   |
+| POST /api/photos/upload            | description, src-url, tags           | Add new photo.                |
+| GET /api/photos/{photo_id}         | photo_id                             | Show photo ifo with comments. |
+| DELETE /api/photos/{photo_id}      | photo_id                             | Delete photo. |
+| PUT /api/photos/{photo_id}         | photo_id                             | Change photo description. |
+| GET /api/photos/search_keyword     | search_by, filter_by                 | Search photo by keyword. |
+| GET /api/photos/search_by_tag      | tag                                  | Search photos by tag. |
+| POST /api/photos/{photo_id}/resize | photo_id(query), width, height       | Change photo size. |
+| POST /api/photos/{photo_id}/crop   | photo_id(query), x, y, width, height | Crop photo. |
+| POST /api/photos/{photo_id}/rotate | photo_id(query), angle               | Rotate photo. |
+
 
 ### Comments
 
@@ -81,7 +82,7 @@ Reflection of Life is web application that helps people to share their photos wi
 ---
 
 ## About our team
-### SUPERTEAM
+### GirLITeam
 - Team Leader: Maryna Zipova
 - Scrum Master: Tetiana Karaschenko
 - Python Developers: Dzvenyslava Vovk, Ira Dachuk

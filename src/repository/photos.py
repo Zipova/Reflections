@@ -2,7 +2,6 @@ import time
 import calendar
 from typing import List
 
-from sqlalchemy import and_
 
 from sqlalchemy import and_, func
 from sqlalchemy.orm import Session
@@ -10,7 +9,6 @@ from sqlalchemy.orm import Session
 from src.database.models import Photo, User, Role, Tag
 from src.schemas import DescriptionUpdate
 from src.repository.tags import get_tag_by_name, create_tag
-
 
 
 current_GMT = time.gmtime()
@@ -50,6 +48,11 @@ async def get_user_photos(limit: int, offset: int, user, db: Session):
 
 async def get_photo(photo_id: int, db: Session):
     photo = db.query(Photo).filter(Photo.id == photo_id).first()
+    return photo
+
+
+async def get_user_photo(photo_id: int, user, db: Session):
+    photo = db.query(Photo).filter(and_(Photo.user_id == user.id, Photo.id == photo_id)).first()
     return photo
 
 
@@ -93,8 +96,7 @@ async def search_photo_by_keyword(search_by: str, filter_by: str, db: Session):
     return result
 
 
-async def search_photo_by_tags(tags: List[str], db: Session):
-    photos = db.query(Photo).filter(func.lower(
-        Tag.name).in_([tag.lower() for tag in tags])).all()
+async def search_photo_by_tag(tag: str, db: Session):
+    photos = db.query(Photo).select_from(Photo).join(Photo.tags).filter(Tag.name == tag).all()
     return photos
 
